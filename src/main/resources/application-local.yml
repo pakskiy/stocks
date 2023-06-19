@@ -1,0 +1,22 @@
+server:
+  port: 8090
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/stocks
+    username: postgres
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: false
+    ddl-auto: false
+    properties:
+      hibernate:
+        proc:
+          param_null_passing: true
+  liquibase:
+    change-log: classpath:db/scripts.xml
+logging:
+  level:
+    liquibase: ERROR
+    root: TRACE
