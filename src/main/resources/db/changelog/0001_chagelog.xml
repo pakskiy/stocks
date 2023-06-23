@@ -1,0 +1,20 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.9.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
+    <changeSet author="oleg" id="10000000-1">
+        <sql>
+            create table quotes
+            (
+                symbol varchar(50),
+                volume bigint,
+                previous_volume bigint,
+                latest_price double precision,
+                previous_latest_price double precision,
+                company_name varchar(255),
+                created_at timestamp NOT NULL default NOW(),
+                updated_at timestamp,
+                status varchar(255),
+                PRIMARY KEY (symbol)
+            );
+        </sql>
+    </changeSet>
+</databaseChangeLog>
