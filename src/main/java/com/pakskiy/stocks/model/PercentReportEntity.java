@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Entity
-public class PercentReport {
+public class PercentReportEntity {
     @Id
     private Integer id;
     private String companyName;

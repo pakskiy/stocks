@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 @Getter
 @Setter
 @Table(name = "quotes")
-public class Quote {
+public class QuoteEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "id_quote_sequence")
     @SequenceGenerator(name = "id_quote_sequence", allocationSize = 1)
     @Id
