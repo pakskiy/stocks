@@ -1,5 +1,5 @@
 server:
-  port: 8090
+  port: 8070
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/stocks
@@ -8,12 +8,15 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    generate-ddl: true
+    generate-ddl: false
     ddl-auto: update
     properties:
       hibernate:
         proc:
           param_null_passing: true
+        generate_statistics: true
+        jdbc:
+          batch_size: 1000
   liquibase:
     change-log: classpath:db/scripts.xml
     enabled: true
@@ -26,10 +29,13 @@ app:
     threadCount: 5
     timeout: 1000
     reportInterval: 5000
+  report:
+    timeout: 5000
+  download:
+    timeout: 3600000
 platform:
   iex:
-    token: pk_63948fd09a6f42dea9fb7f997d0a53b2
+    token: pk_0b8f0b72c3ad4304bd99e6e3ba337fb0
     url:
       quote: https://cloud.iexapis.com/stable/stock
       symbol: https://cloud.iexapis.com/stable/ref-data/symbols
-
