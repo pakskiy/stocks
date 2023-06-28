@@ -3,141 +3,87 @@ package com.pakskiy.stocks.job;
 import com.pakskiy.stocks.connection.iexcloud.IexCloudConnector;
 import com.pakskiy.stocks.dto.QuoteDto;
 import com.pakskiy.stocks.dto.SymbolsDto;
-import com.pakskiy.stocks.model.LoggerSystem;
-import com.pakskiy.stocks.model.Quote;
-import com.pakskiy.stocks.repository.LoggingSystemRepository;
+import com.pakskiy.stocks.model.CompanyEntity;
+import com.pakskiy.stocks.model.QuoteEntity;
+import com.pakskiy.stocks.repository.CompanyRepository;
 import com.pakskiy.stocks.repository.QuoteRepository;
-import jakarta.annotation.PostConstruct;
-import org.springframework.transaction.annotation.Transactional;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CompanyDownloadService {
+public class LoadJob {
     private final IexCloudConnector iexCloudConnector;
     private final QuoteRepository quoteRepository;
-    private final ExecutorService executorService;
-    private final LoggingSystemRepository loggingSystemRepository;
-    private AtomicInteger counter;
-    @PostConstruct
-    private void init() {
-        startDownload();
-    }
+    private final CompanyRepository companyRepository;
 
+
+    @Scheduled(fixedRateString ="${app.download.timeout}", initialDelay=2000)
     public void startDownload() {
+        //getting data from API for companies
         List<SymbolsDto> symbolsDtoList = iexCloudConnector.loadSymbols();
-        counter = new AtomicInteger(symbolsDtoList.size());
+        List<CompanyEntity> companyEntityList = symbolsDtoList.stream().map(SymbolsDto::toEntity).toList();
         try {
-            for(int i=0; i< symbolsDtoList.size(); i++){
-                getQuote(symbolsDtoList.get(i).getSymbol().toLowerCase());
-//                if(i%5==0){Thread.sleep(1200);}
-            }
+            companyRepository.saveAll(companyEntityList);
         }catch (Exception e){
-            log.error("startDownload", e);
+            log.error("startDownload::saveCompanies", e);
         }
-    }
-    private CompletableFuture<Void> getQuote(String symbol) {
-        return CompletableFuture.runAsync( () -> {
-            saveSymbol(symbol);
-            checkQueue();
-        }, executorService);
-    }
 
-//    private CompletableFuture<String> getQuoteSupply(String symbol) {
-//        return CompletableFuture.supplyAsync( () -> {
-//            saveSymbol(symbol);
-//            return "success";
-//        }, executorService).thenApply(name -> {
-//            checkQueue();
-//            log.info(Thread.currentThread().getName());
-//            return "Hello " + name;
-//        });
-//    }
+        //getting quote data from API for each company
+        List<QuoteEntity> quoteEntityFromApiList = companyEntityList.parallelStream()
+                .map(companyEntity -> iexCloudConnector.loadStock(companyEntity.getId().toLowerCase()).join())
+                .filter(Objects::nonNull)
+                .toList()
+                //here again stream from list because getting NullPointerException for CallableFuture from loadStock method when 429 http error
+                .stream()
+                .map(QuoteDto::toEntity)
+                .toList();
 
-    private void checkQueue() {
-        if(counter.get()==1){
-            counter.getAndDecrement();
-            startDownload();
-            log.info("COUNTER VALUE: " + counter.get());
+        List<QuoteEntity> quoteEntityFromDbList = quoteRepository.getQuotes();
+
+        if(!quoteEntityFromDbList.isEmpty()){
+            //here HashMap for compare values with quoteEntityFromApiList
+            HashMap<String, QuoteEntity> quoteDtoHashMapFromDb = (HashMap<String, QuoteEntity>) quoteEntityFromDbList.stream().collect(Collectors.toMap(QuoteEntity::getCompanyId, Function.identity()));
+
+            //compare API list with DB list
+            quoteEntityFromApiList = quoteEntityFromApiList.stream()
+                    .filter(x -> !isSame(x, quoteDtoHashMapFromDb))
+                    .peek(x -> replacePreviousPrice(x, quoteDtoHashMapFromDb))
+                    .collect(Collectors.toList());
         }
+        quoteRepository.saveAll(quoteEntityFromApiList);
     }
 
-    @Transactional
-    public void saveSymbol(@NotNull String symbol){
-        QuoteDto quoteDto = null;
-        try {
-            quoteDto = iexCloudConnector.loadStock(symbol);
-        }catch (Exception e){log.error("Error getting quote by symbol: " + symbol);}
-
-        if(quoteDto!= null){
-            boolean needSave;
-            Quote quote;
-            if((quote = checkQuoteBySymbol(symbol)) != null){
-                if(needSave = isSame(quote, quoteDto)){
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(" latest_price from ");
-                    sb.append(quote.getLatestPrice());
-                    sb.append(" to ");
-                    sb.append(quoteDto.getLatestPrice());
-                    sb.append(" volume from ");
-                    sb.append(quote.getVolume());
-                    sb.append(" to ");
-                    sb.append(quoteDto.getVolume());
-                    sb.append(" latest_price from ");
-                    sb.append(quote.getLatestPrice());
-                    sb.append(" to ");
-                    sb.append(quoteDto.getLatestPrice());
-                    sb.append(" volume from ");
-                    sb.append(quote.getVolume());
-                    sb.append(" to ");
-                    sb.append(quoteDto.getVolume());
-                    sb.append(" previous_volume from ");
-                    sb.append(quote.getPreviousVolume());
-                    sb.append(" to ");
-                    sb.append(quoteDto.getPreviousVolume());
-
-                    LoggerSystem loggerSystemRecord = new LoggerSystem();
-                    loggerSystemRecord.setSymbolId(symbol.toLowerCase());
-                    loggerSystemRecord.setData(sb.toString());
-                    loggingSystemRepository.save(loggerSystemRecord);
-
-                    quote.setPreviousLatestPrice(quote.getLatestPrice());
-                }
-            } else {
-                quote.setSymbol(symbol);
-                quote.setPreviousLatestPrice(null);
-                quote.setCompanyName(quoteDto.getCompanyName());
-                needSave = true;
-            }
-
-            quote.setUpdated_at(ZonedDateTime.now());
-            quote.setLatestPrice(quoteDto.getLatestPrice());
-            quote.setVolume(quoteDto.getVolume());
-            quote.setPreviousVolume(quoteDto.getPreviousVolume());
-            if(needSave) {quoteRepository.save(quote);}
-        } else {
-            log.warn("Oops, no data for symbol: " + symbol);
+    private boolean isSame(QuoteEntity quoteEntity, HashMap<String, QuoteEntity> quoteHashMap) {
+        if(quoteHashMap.containsKey(quoteEntity.getCompanyId())){
+            QuoteEntity mapQuoteEntity = quoteHashMap.get(quoteEntity.getCompanyId());
+            return compareQuotes(mapQuoteEntity, quoteEntity);
         }
+        return false;
     }
 
-    private Quote checkQuoteBySymbol(String symbol){
-        return quoteRepository.getQuoteBySymbol(symbol.toLowerCase()).orElse(null);
+    //Checker for diff fields between current and previous quotes
+    private boolean compareQuotes(QuoteEntity quoteEntity, QuoteEntity quoteEntityDto){
+        boolean res = Objects.equals(quoteEntity.getLatestPrice(), quoteEntityDto.getLatestPrice())
+                && Objects.equals(quoteEntity.getVolume(), quoteEntityDto.getVolume())
+                && Objects.equals(quoteEntity.getPreviousVolume(), quoteEntityDto.getPreviousVolume());
+        return res;
     }
 
-    private boolean isSame(Quote quote, QuoteDto quoteDto){
-        return !Objects.equals(quote.getLatestPrice(), quoteDto.getLatestPrice())
-                || !Objects.equals(quote.getVolume(), quoteDto.getVolume())
-                || !Objects.equals(quote.getPreviousVolume(), quoteDto.getPreviousVolume());
+    //Replace previous_latest_price in quotes if has differences
+    private void replacePreviousPrice(QuoteEntity quoteEntity, HashMap<String, QuoteEntity> quoteHashMap){
+        if(quoteHashMap.containsKey(quoteEntity.getCompanyId())){
+            Double previousLatestPrice = quoteHashMap.get(quoteEntity.getCompanyId()).getLatestPrice();
+            quoteEntity.setPreviousLatestPrice(previousLatestPrice==null ? 0 : previousLatestPrice);
+        }
     }
 }
