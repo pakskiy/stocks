@@ -6,14 +6,14 @@ import lombok.Data;
 
 @Data
 @Entity
-public class VolumeReport {
+public class PercentReportEntity {
     @Id
     private Integer id;
     private String companyName;
-    private String volume;
+    private String percent;
 
     @Override
     public String toString() {
-        return id + " | " + companyName + " | " + volume;
+        return companyName + " | " + percent;
     }
 }

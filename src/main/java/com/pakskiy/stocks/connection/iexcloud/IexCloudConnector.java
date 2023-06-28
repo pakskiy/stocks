@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
@@ -46,15 +47,15 @@ public class IexCloudConnector implements Connector<SymbolsDto, QuoteDto> {
     }
 
     @Override
-    public QuoteDto loadStock(String name) {
+    public CompletableFuture<QuoteDto> loadStock(String name) {
         try {
             String resourceUrl = URL_QUOTE + "/" + name + "/quote?token=" + TOKEN;
-            return restTemplate.getForObject(resourceUrl, QuoteDto.class);
+            return CompletableFuture.completedFuture(restTemplate.getForObject(resourceUrl, QuoteDto.class));
         }catch (HttpClientErrorException er){
             log.error("loadStock: [" + name + "] [" + er.getStatusCode() + "]");
         }catch (Exception e){
             log.error("loadStock: " + e);
         }
-        return null;
+        return CompletableFuture.completedFuture(null);
     }
 }

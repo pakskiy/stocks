@@ -1,7 +1,7 @@
-package com.pakskiy.stocks.service;
+package com.pakskiy.stocks.job;
 
-import com.pakskiy.stocks.model.PercentReport;
-import com.pakskiy.stocks.model.VolumeReport;
+import com.pakskiy.stocks.model.PercentReportEntity;
+import com.pakskiy.stocks.model.VolumeReportEntity;
 import com.pakskiy.stocks.repository.PercentReportRepository;
 import com.pakskiy.stocks.repository.VolumeReportRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,37 +15,38 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ReportService {
+public class ReportJob {
     private final VolumeReportRepository volumeReportRepository;
     private final PercentReportRepository percentReportRepository;
-    @Scheduled(fixedRateString = "5000")
+
+    @Scheduled(fixedRateString ="${app.report.timeout}", initialDelay=2000)
     public void report() {
-        List<VolumeReport> volumeReportList = new ArrayList<>();
-        List<PercentReport> percentReportList = new ArrayList<>();
+        List<VolumeReportEntity> volumeReportEntityList = new ArrayList<>();
+        List<PercentReportEntity> percentReportEntityList = new ArrayList<>();
 
         try {
-            volumeReportList = volumeReportRepository.getVolumeReport();
+            volumeReportEntityList = volumeReportRepository.getVolumeReport();
         }catch (Exception e){
-            log.error("report:volume report", e);
+            log.error("Report:volume report", e);
         }
 
         try {
-            percentReportList = percentReportRepository.getPercentReport();
+            percentReportEntityList = percentReportRepository.getPercentReport();
         }catch (Exception e){
-            log.error("report:percent report", e);
+            log.error("Report:percent report", e);
         }
 
         log.info("\n\n");
         log.info("==================================================");
         log.info("=================REPORT BY VOLUME=================");
-        for(VolumeReport v : volumeReportList){
+        for(VolumeReportEntity v : volumeReportEntityList){
             log.info(v.toString());
         }
         log.info("==================================================");
         log.info("\n\n");
         log.info("==================================================");
         log.info("=================REPORT BY PERCENT=================");
-        for(PercentReport p : percentReportList){
+        for(PercentReportEntity p : percentReportEntityList){
             log.info(p.toString());
         }
         log.info("==================================================");

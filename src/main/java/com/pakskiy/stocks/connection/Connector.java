@@ -1,8 +1,9 @@
 package com.pakskiy.stocks.connection;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface Connector<T, V> {
     List<T> loadSymbols();
-    V loadStock(String name);
+    CompletableFuture<V> loadStock(String name);
 }

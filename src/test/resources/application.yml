@@ -1,14 +1,14 @@
 server:
-  port: 8070
+  port: 8090
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/stocks
+    url: jdbc:tc:postgresql:12.8:///stocksTestDb
     username: postgres
     password: 123456
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    generate-ddl: false
+    generate-ddl: true
     ddl-auto: update
     properties:
       hibernate:
@@ -31,11 +31,10 @@ app:
     reportInterval: 5000
   report:
     timeout: 5000
-  download:
-    timeout: 3600000
 platform:
   iex:
-    token: pk_0b8f0b72c3ad4304bd99e6e3ba337fb0
+    token: pk_63948fd09a6f42dea9fb7f997d0a53b2
     url:
       quote: https://cloud.iexapis.com/stable/stock
       symbol: https://cloud.iexapis.com/stable/ref-data/symbols
+
