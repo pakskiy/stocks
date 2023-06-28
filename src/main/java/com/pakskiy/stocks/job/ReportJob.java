@@ -1,4 +1,4 @@
-package com.pakskiy.stocks.service;
+package com.pakskiy.stocks.job;
 
 import com.pakskiy.stocks.model.PercentReport;
 import com.pakskiy.stocks.model.VolumeReport;

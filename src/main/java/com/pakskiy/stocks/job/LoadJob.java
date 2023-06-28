@@ -1,4 +1,4 @@
-package com.pakskiy.stocks.service;
+package com.pakskiy.stocks.job;
 
 import com.pakskiy.stocks.connection.iexcloud.IexCloudConnector;
 import com.pakskiy.stocks.dto.QuoteDto;
