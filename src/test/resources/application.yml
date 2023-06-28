@@ -1,0 +1,40 @@
+server:
+  port: 8090
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:12.8:///stocksTestDb
+    username: postgres
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    ddl-auto: update
+    properties:
+      hibernate:
+        proc:
+          param_null_passing: true
+        generate_statistics: true
+        jdbc:
+          batch_size: 1000
+  liquibase:
+    change-log: classpath:db/scripts.xml
+    enabled: true
+logging:
+  level:
+    liquibase: ERROR
+    root: INFO
+app:
+  limits:
+    threadCount: 5
+    timeout: 1000
+    reportInterval: 5000
+  report:
+    timeout: 5000
+platform:
+  iex:
+    token: pk_63948fd09a6f42dea9fb7f997d0a53b2
+    url:
+      quote: https://cloud.iexapis.com/stable/stock
+      symbol: https://cloud.iexapis.com/stable/ref-data/symbols
+
