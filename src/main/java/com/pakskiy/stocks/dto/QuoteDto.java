@@ -1,11 +1,13 @@
 package com.pakskiy.stocks.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Id;
+import com.pakskiy.stocks.model.QuoteEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
+
+import java.time.ZonedDateTime;
 
 @Jacksonized
 @Builder
@@ -69,4 +71,14 @@ public class QuoteDto {
     private final Double week52Low;
     private final Long volume;
     private final Double ytdChange;
+
+    public QuoteEntity toEntity(){
+        return QuoteEntity.builder().companyId(symbol)
+                .volume(volume)
+                .previousVolume(previousVolume)
+                .latestPrice(latestPrice)
+                .previousLatestPrice(null)
+                .created_at(ZonedDateTime.now())
+                .updated_at(ZonedDateTime.now()).build();
+    }
 }

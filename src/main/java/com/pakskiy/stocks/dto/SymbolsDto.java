@@ -1,8 +1,11 @@
 package com.pakskiy.stocks.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.pakskiy.stocks.model.CompanyEntity;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+
+import java.time.ZonedDateTime;
 
 @Jacksonized
 @Builder
@@ -22,4 +25,7 @@ public class SymbolsDto {
     private final String figi;
     private final String cik;
 
+    public CompanyEntity toEntity(){
+        return CompanyEntity.builder().id(symbol).name(name).created_at(ZonedDateTime.now()).build();
+    }
 }
