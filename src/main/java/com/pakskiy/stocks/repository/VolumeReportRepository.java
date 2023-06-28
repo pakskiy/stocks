@@ -1,6 +1,6 @@
 package com.pakskiy.stocks.repository;
 
-import com.pakskiy.stocks.model.VolumeReport;
+import com.pakskiy.stocks.model.VolumeReportEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -8,10 +8,13 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface VolumeReportRepository extends JpaRepository<VolumeReport, Integer> {
-    @Query(nativeQuery = true, value = "select ROW_NUMBER () OVER () id, a.company_name, a.volume from " +
-            "(select company_name ||' ['||UPPER(symbol)||']' as company_name, GREATEST(COALESCE(volume, 0), COALESCE(previous_volume, 0))  volume " +
-            "from quotes " +
-            "where previous_volume is not null or volume is not null order by 2 desc) a limit 5")
-    List<VolumeReport> getVolumeReport();
+public interface VolumeReportRepository extends JpaRepository<VolumeReportEntity, Integer> {
+    @Query(nativeQuery = true, value = "select ROW_NUMBER () OVER () id, a.company_name, a.volume " +
+            "FROM  (" +
+            "SELECT c.name ||' ['||UPPER(c.id)||']' as company_name, GREATEST(COALESCE(q.volume, 0), COALESCE(q.previous_volume, 0)) volume, q.latest_price, q.created_at, q.updated_at, RANK() OVER (PARTITION BY q.company_id ORDER BY q.created_at DESC) as rnk " +
+            "FROM quotes q, companies c " +
+            "WHERE q.company_id = c.id " +
+            "ORDER BY 2 DESC " +
+            ") a WHERE a.rnk = 1 LIMIT 5")
+    List<VolumeReportEntity> getVolumeReport();
 }
