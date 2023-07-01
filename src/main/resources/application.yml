@@ -2,7 +2,7 @@ server:
   port: 8090
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/stocks
+    url: ${DATABASE_URL}
     username: ${DATABASE_LOGIN}
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
@@ -30,12 +30,12 @@ app:
     timeout: 1000
     reportInterval: 5000
   report:
-    timeout: 5000
+    timeout: ${REPORT_TIMEOUT}
   download:
-    timeout: 3600000
+    timeout: ${DOWNLOAD_TIMEOUT}
 platform:
   iex:
-    token: pk_63948fd09a6f42dea9fb7f997d0a53b2
+    token: ${STOCK_TOKEN}
     url:
       quote: https://cloud.iexapis.com/stable/stock
       symbol: https://cloud.iexapis.com/stable/ref-data/symbols

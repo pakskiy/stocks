@@ -27,9 +27,9 @@ class LoadJobTest {
 
     @Test
     void startDownload() {
-        IexCloudConnector iexCloudConnector = new IexCloudConnector();
-        List<SymbolsDto> symbolsDtoList = iexCloudConnector.loadSymbols();
-        List<CompanyEntity> companyEntityList = symbolsDtoList.stream().map(SymbolsDto::toEntity).toList();
-        System.out.println(symbolsDtoList.size());
+//        IexCloudConnector iexCloudConnector = new IexCloudConnector();
+//        List<SymbolsDto> symbolsDtoList = iexCloudConnector.loadSymbols();
+//        List<CompanyEntity> companyEntityList = symbolsDtoList.stream().map(SymbolsDto::toEntity).toList();
+//        System.out.println(symbolsDtoList.size());
     }
 }

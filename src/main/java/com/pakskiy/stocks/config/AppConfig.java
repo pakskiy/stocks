@@ -10,8 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Configuration
-@EnableScheduling
-@EnableJpaRepositories
 public class AppConfig {
     @Bean
     public RestTemplate restTemplate()

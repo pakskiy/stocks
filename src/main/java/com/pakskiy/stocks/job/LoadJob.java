@@ -11,6 +11,7 @@ import com.pakskiy.stocks.utils.CompareUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -26,7 +27,6 @@ public class LoadJob {
     private final IexCloudConnector iexCloudConnector;
     private final QuoteRepository quoteRepository;
     private final CompanyRepository companyRepository;
-
 
     @Scheduled(fixedRateString ="${app.download.timeout}", initialDelay=2000)
     public void startDownload() {
