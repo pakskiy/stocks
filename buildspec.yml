@@ -49,7 +49,6 @@ phases:
       - aws eks update-kubeconfig --name $AWS_CLUSTER_NAME --region $AWS_DEFAULT_REGION
       - kubectl config view --minify
       - aws sts get-caller-identity
-
-#      - kubectl describe configmap aws-auth -n kube-system
-#      - kubectl create deployment hello-minikube --image=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-#      - kubectl delete services hello-minikube
+      - kubectl describe configmap aws-auth -n kube-system
+      - kubectl create deployment hello-minikube --image=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - kubectl delete services hello-minikube
