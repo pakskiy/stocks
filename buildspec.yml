@@ -63,8 +63,8 @@ phases:
       - echo Rollout new version
 
       - aws sts get-caller-identity
-      - echo kubectl set image deployment/$DEPLOYMENT_NAME [container name]=$CONTAINER_NAME
-      - "kubectl set image deployment/$DEPLOYMENT_NAME [container name]=$CONTAINER_NAME"
+      - echo kubectl set image deployment/$DEPLOYMENT_NAME nginx=$CONTAINER_NAME
+      - "kubectl set image deployment/$DEPLOYMENT_NAME nginx=$CONTAINER_NAME"
 
 #      - kubectl create deployment hello-minikube --image=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
 #      - kubectl delete services hello-minikube
