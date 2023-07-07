@@ -63,6 +63,7 @@ phases:
       - echo Rollout new version
 
       - aws sts get-caller-identity
+      - aws eks update-kubeconfig --name $AWS_CLUSTER_NAME --region $AWS_DEFAULT_REGION
       - echo kubectl set image deployment/$DEPLOYMENT_NAME nginx=$CONTAINER_NAME
       - "kubectl set image deployment/$DEPLOYMENT_NAME nginx=$CONTAINER_NAME"
 
